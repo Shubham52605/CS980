@@ -13,11 +13,13 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.store.Directory;
@@ -52,6 +54,17 @@ public class SearchIndex
 		paraID = new ArrayList<String>();
 		documents = new ArrayList<Document>();
 	}
+	public SearchIndex(String INDEX_DIR, String field) throws IOException
+	{
+		SearchIndex.INDEX_DIR = INDEX_DIR;
+		is = createSearcher();
+		qp = createParser(field);
+	}
+	public SearchIndex(String INDEX_DIR) throws IOException
+	{
+		SearchIndex.INDEX_DIR = INDEX_DIR;
+		is = createSearcher();
+	}
 	private static IndexSearcher createSearcher()throws IOException
 	{
 		Directory dir = FSDirectory.open((new File(INDEX_DIR).toPath()));
@@ -65,11 +78,25 @@ public class SearchIndex
 		QueryParser parser = new QueryParser("parabody", new StandardAnalyzer());
 		return parser;
 	}
+	private static QueryParser createParser(String field)throws IOException
+	{
+		QueryParser parser = new QueryParser(field, new StandardAnalyzer());
+		return parser;
+	}
 	private static TopDocs searchIndex(String query,int n)throws IOException,ParseException
 	{
 		Query q = qp.parse(query);
 		TopDocs tds = is.search(q, n);
 		return tds;
+	}
+	public static Document searchIndex(String field,String query)throws IOException,ParseException
+	{
+		Term term = new Term(field,query);
+		Query q = new TermQuery(term);
+		TopDocs tds = is.search(q,1);
+		ScoreDoc[] retDocs = tds.scoreDocs;
+		Document d = is.doc(retDocs[0].doc);
+		return d;
 	}
 	private static void rankParas(String qString, String qID, int n) throws IOException, ParseException 
 	{

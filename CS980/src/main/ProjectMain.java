@@ -3,8 +3,11 @@ package main;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.apache.lucene.queryparser.classic.ParseException;
+
 import carHypertextGraph.MakeCARGraphFile;
 import carHypertextGraph.PageRank;
+import entityLinking.EntityLinker;
 import pageRank.PersonalisedPageRank;
 
 public class ProjectMain 
@@ -73,6 +76,28 @@ public class ProjectMain
 			MakeCARGraphFile ob = new MakeCARGraphFile(cborFile,file,paraRunFile);
 			ob.makeGraphFile();
 		}
+		else if(args[0].equalsIgnoreCase("-link"))
+		{
+			System.out.println("Entity Linking");
+			String dir = args[1];
+			String s1 = dir+"/"+args[2];
+			String s2 = dir+"/"+args[3];
+			String s3 = dir+"/"+args[4];
+			String s4 = dir+"/"+args[5];
+			String s5 = args[6];
+			String s6 = args[7];
+			String s7 = args[8];
+			String s8 = args[9];
+			EntityLinker ob = new EntityLinker(s1,s2,s3,s4,s5,s6,s7,s8);
+			try 
+			{
+				ob.link();
+			} 
+			catch (ParseException e) 
+			{
+				e.printStackTrace();
+			}
+		}
 		else
 		{
 			System.out.println("Wrong usage.To see usage, run with option -u.");
@@ -91,6 +116,7 @@ public class ProjectMain
 		System.out.println("-pr: Run PageRank Algorithm on a Graph");
 		System.out.println("-ppr: Run PersonalisedPageRank Algorithm on a Graph");
 		System.out.println("-make: Make a CAR Hypertext Graph of paragraphs as nodes and entities as edges");
+		System.out.println("-link: Entity Linking");
 		System.out.println();
 		System.out.println("************************************************************************************************************************************************************");
 		System.out.println("             										USAGE SYNTAX                   																			");
@@ -111,5 +137,9 @@ public class ProjectMain
 		System.out.println("java -jar $jar file$ -ppr $path to graph file$ $value of random jump (alpha)$ $size of seed set$ $seed values$");
 		
 		System.out.println("java -jar $jar file$ -make $path to paragraph corpus cbor file$ $path to graph file$");
+		System.out.println("java -jar $jar file$ -link $path to openNLP directory$ $name of tokenizer file$"
+				+ "$name of name finder file$ $name of location finder file$ $name of organization finder file$"
+				+ "$path to all but benchmark file$ $path to leading paragraphs file$ $path to leading paragraphs cbor file$"
+				+ "$path to index directory$");
 	}
 }
